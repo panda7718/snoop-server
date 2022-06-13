@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source /home/cabox/.bashrc
 mkdir -p ~/workspace/ && \
 rm -rf ~/workspace/snoop-server && \
 cd ~/workspace && \

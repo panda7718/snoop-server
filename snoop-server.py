@@ -17,7 +17,8 @@ def exec_tool(name):
         json = request.get_json()
         command = json["command"]
         app.logger.info(f'{command}')
-        tool_subprocesses[name] = 'started'
+        sp = subprocess.Popen([command], stdin=subprocess.PIPE)
+        tool_subprocesses[name] = sp
         return 'Running'
     elif (request.method == 'GET'):
         if (tool_subprocesses[name] != None):
@@ -25,6 +26,7 @@ def exec_tool(name):
         return 'Not running'
     else:
         app.logger.info(f'stopping tool {name}')
+        tool_subprocesses[name].terminate()
         tool_subprocesses.pop(name)
         return 'Not running'
 

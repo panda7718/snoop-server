@@ -13,7 +13,8 @@ def hello():
 @app.route('/exec/<name>', methods=['GET', 'POST', 'DELETE'])
 def exec_tool(name):
     if (request.method == 'POST'):
-        print(f'executing tool {name}')
+        app.logger.info(f'executing tool {name}')
+        app.logger.info(f'{request.form["command"]}')
         tool_subprocesses[name] = 'started'
         return 'Running'
     elif (request.method == 'GET'):
@@ -21,7 +22,7 @@ def exec_tool(name):
             return 'Running'
         return 'Not running'
     else:
-        print(f'stopping tool {name}')
+        app.logger.info(f'stopping tool {name}')
         tool_subprocesses.pop(name)
         return 'Not running'
 

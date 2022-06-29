@@ -22,7 +22,7 @@ class MyThread(Thread):
     def run(self):
         while not self.stopped.wait(0.5):
             if (not self.started):
-                os.system(self.command)
+                os.popen(self.command)
                 self.started = True
 
 

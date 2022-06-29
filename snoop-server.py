@@ -14,7 +14,9 @@ def hello():
 def exec_tool(name):
     if (request.method == 'POST'):
         app.logger.info(f'executing tool {name}')
-        app.logger.info(f'{request.form["command"]}')
+        json = request.get_json()
+        command = json["command"]
+        app.logger.info(f'{command}')
         tool_subprocesses[name] = 'started'
         return 'Running'
     elif (request.method == 'GET'):

@@ -17,7 +17,7 @@ def exec_tool(name):
         json = request.get_json()
         command = json["command"]
         app.logger.info(f'{command}')
-        sp = subprocess.Popen([command], stdin=subprocess.PIPE)
+        sp = subprocess.Popen(["sh", command], stdin=subprocess.PIPE)
         tool_subprocesses[name] = sp
         return 'Running'
     elif (request.method == 'GET'):

@@ -11,6 +11,21 @@ tool_subprocesses = {}
 def hello():
     return 'Hello World!'
 
+
+class MyThread(Thread):
+    def __init__(self, event, command):
+        Thread.__init__(self)
+        self.stopped = event
+        self.started = False
+        self.command = command
+
+    def run(self):
+        while not self.stopped.wait(0.5):
+            if (not self.started):
+                os.system(self.command)
+                self.started = True
+
+
 @app.route('/exec/<name>', methods=['GET', 'POST', 'DELETE'])
 def exec_tool(name):
     if (request.method == 'POST'):
@@ -18,8 +33,9 @@ def exec_tool(name):
         json = request.get_json()
         command = json["command"]
         app.logger.info(f'{command}')
-        os.popen(command)
-        tool_subprocesses[name] = 'started'
+        thread = MyThread(Event(), command)
+        tool_subprocesses[name] = thread
+        thread.start()
         return 'Running'
     elif (request.method == 'GET'):
         if (tool_subprocesses[name] != None):
@@ -27,6 +43,7 @@ def exec_tool(name):
         return 'Not running'
     else:
         app.logger.info(f'stopping tool {name}')
+        tool_subprocesses[name].stopped.set()
         tool_subprocesses.pop(name)
         return 'Not running'
 

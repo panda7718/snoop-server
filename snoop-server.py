@@ -1,15 +1,12 @@
 from flask import Flask
 from flask import request
 import os
+import subprocess
 from threading import Thread, Event
 
 app = Flask(__name__)
 
 tool_subprocesses = {}
-
-@app.route('/')
-def hello():
-    return 'Hello World!'
 
 
 class MyThread(Thread):
@@ -18,13 +15,19 @@ class MyThread(Thread):
         self.stopped = event
         self.started = False
         self.command = command
+        self.process = None
 
     def run(self):
         while not self.stopped.wait(0.5):
             if (not self.started):
-                os.popen(self.command, mode='r')
+                self.process = subprocess.Popen([self.command], stdout=subprocess.PIPE, shell=True)
+                self.process.wait()
                 self.started = True
 
+
+@app.route('/')
+def hello():
+    return 'Hello snoop!'
 
 @app.route('/exec/<name>', methods=['GET', 'POST', 'DELETE'])
 def exec_tool(name):
@@ -33,7 +36,7 @@ def exec_tool(name):
         json = request.get_json()
         command = json["command"]
         app.logger.info(f'{command}')
-        thread = MyThread(Event(), command)
+        thread = MyThread(Event(), f'eval "{command}"')
         tool_subprocesses[name] = thread
         thread.start()
         return 'Running'
@@ -43,6 +46,7 @@ def exec_tool(name):
         return 'Not running'
     else:
         app.logger.info(f'stopping tool {name}')
+        tool_subprocesses[name].process.terminate()
         tool_subprocesses[name].stopped.set()
         tool_subprocesses.pop(name)
         return 'Not running'

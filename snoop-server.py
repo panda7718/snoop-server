@@ -41,9 +41,8 @@ def exec_tool(name):
         json = request.get_json()
         command = f'eval "{json["command"]}"'
         app.logger.info(f'{command}')
-        thread = asyncio.run(run(command))
-        tool_subprocesses[name] = thread
-        thread.start()
+        process = subprocess.Popen(command, shell=True, stdin=None, stdout=None, stderr=None)
+        tool_subprocesses[name] = process
         return 'Running'
     elif (request.method == 'GET'):
         if (tool_subprocesses[name] != None):
@@ -52,8 +51,7 @@ def exec_tool(name):
     else:
         app.logger.info(f'stopping tool {name}')
         if (tool_subprocesses.get(name) != None):
-            tool_subprocesses[name].process.terminate()
-            tool_subprocesses[name].stopped.set()
+            tool_subprocesses[name].terminate()
             tool_subprocesses.pop(name)
         return 'Not running'
 

@@ -21,7 +21,6 @@ class MyThread(Thread):
         while not self.stopped.wait(0.5):
             if (not self.started):
                 self.process = subprocess.Popen([self.command], stdout=subprocess.PIPE, shell=True)
-                self.process.wait()
                 self.started = True
 
 

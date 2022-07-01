@@ -3,6 +3,7 @@ from flask import request
 import os
 import subprocess
 from threading import Thread, Event
+import asyncio
 
 app = Flask(__name__)
 
@@ -17,11 +18,16 @@ class MyThread(Thread):
         self.command = command
         self.process = None
 
-    def run(self):
+    async def run(self):
         while not self.stopped.wait(0.5):
             if (not self.started):
-                self.process = subprocess.Popen([self.command], stdout=subprocess.PIPE, shell=True)
+                proc = await asyncio.create_subprocess_shell(self.command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                self.process = proc
                 self.started = True
+
+
+async def run(command):
+    proc = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
 
 @app.route('/')
@@ -33,9 +39,9 @@ def exec_tool(name):
     if (request.method == 'POST'):
         app.logger.info(f'executing tool {name}')
         json = request.get_json()
-        command = json["command"]
+        command = f'eval "{json["command"]}"'
         app.logger.info(f'{command}')
-        thread = MyThread(Event(), f'eval "{command}"')
+        thread = asyncio.run(run(command))
         tool_subprocesses[name] = thread
         thread.start()
         return 'Running'

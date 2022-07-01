@@ -46,9 +46,10 @@ def exec_tool(name):
         return 'Not running'
     else:
         app.logger.info(f'stopping tool {name}')
-        tool_subprocesses[name].process.terminate()
-        tool_subprocesses[name].stopped.set()
-        tool_subprocesses.pop(name)
+        if (tool_subprocesses.get(name) != None):
+            tool_subprocesses[name].process.terminate()
+            tool_subprocesses[name].stopped.set()
+            tool_subprocesses.pop(name)
         return 'Not running'
 
 if __name__ == '__main__':
